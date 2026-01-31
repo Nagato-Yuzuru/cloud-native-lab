@@ -1,0 +1,10 @@
+[tools]
+helm = "latest"
+k9s = "latest"
+kind = "latest"
+kubectl = "latest"
+opentofu = "latest"
+
+[env]
+KUBECONFIG = "{{config_root}}/bootstrap/kubeconfig"
+TF_DATA_DIR = "{{config_root}}/.terraform-data"
