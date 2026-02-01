@@ -11,3 +11,32 @@ datasources:
         url: http://victoriametrics-victoria-metrics-single-server.observability.svc.cluster.local:8428
         access: proxy
         isDefault: true
+dashboardProviders:
+  dashboardproviders.yaml:
+    apiVersion: 1
+    providers:
+      - name: 'default'
+        orgId: 1
+        folder: ''
+        type: file
+        disableDeletion: false
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards/default
+
+dashboards:
+  default:
+    kubernetes-cluster:
+      gnetId: 315
+      revision: 3
+      datasource: VictoriaMetrics
+
+    node-exporter:
+      gnetId: 1860
+      revision: 29
+      datasource: VictoriaMetrics
+
+securityContext:
+  runAsUser: 472
+  runAsGroup: 472
+  fsGroup: 472
