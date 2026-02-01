@@ -22,5 +22,10 @@ set shell := ["bash", "-c"]
     echo "\n--- Ingress ---"
     kubectl get pods -n ingress-nginx
 
+@clean-zombies:
+    helm list -A -o json \
+    | jq -r '.[] | select(.status | test("pending|fail")) | "\(.name) -n \(.namespace)"' \
+    | xargs -r -L1 helm uninstall --no-hooks
+
 ssh:
     docker exec -it native-lab-control-plane bash

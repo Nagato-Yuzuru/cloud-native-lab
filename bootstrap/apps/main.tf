@@ -64,3 +64,35 @@ resource "helm_release" "ingress_nginx" {
 
   depends_on = [helm_release.cilium]
 }
+
+resource "helm_release" "argocd" {
+  name             = "argocd"
+  repository       = "https://argoproj.github.io/argo-helm"
+  chart            = "argo-cd"
+  version          = "9.3.7"
+  namespace        = "argocd"
+  create_namespace = true
+
+  set = [{
+    name  = "applicationSet.enabled"
+    value = "true"
+  },
+    {
+      name  = "redis-ha.enabled"
+      value = "false"
+    },
+    {
+      name  = "controller.replicas"
+      value = "1"
+    },
+    {
+      name  = "server.replicas"
+      value = "1"
+    },
+    {
+      name  = "repoServer.replicas"
+      value = "1"
+    }]
+
+  depends_on = [helm_release.cilium]
+}

@@ -9,7 +9,7 @@ provider "kind" {}
 resource "kind_cluster" "default" {
   name           = "native-lab"
   node_image     = "kindest/node:v1.35.0"
-  wait_for_ready = true
+  wait_for_ready = false
 
   kind_config {
     kind        = "Cluster"
@@ -42,7 +42,8 @@ resource "kind_cluster" "default" {
   }
 }
 
+
 resource "local_file" "kubeconfig" {
   content  = kind_cluster.default.kubeconfig
-  filename = "${path.module}/../../kubeconfig"
+  filename = "${path.module}/../kubeconfig"
 }
