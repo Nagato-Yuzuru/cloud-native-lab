@@ -1,0 +1,13 @@
+persistence:
+  enabled: true
+  size: 5Gi
+adminPassword: admin
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+      - name: VictoriaMetrics
+        type: prometheus
+        url: http://victoriametrics-victoria-metrics-single-server.observability.svc.cluster.local:8428
+        access: proxy
+        isDefault: true
