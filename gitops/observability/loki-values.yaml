@@ -1,0 +1,57 @@
+deploymentMode: SingleBinary
+
+loki:
+  auth_enabled: false
+
+  storage:
+    type: filesystem
+
+  common:
+    replication_factor: 1
+    path_prefix: /var/loki
+    storage:
+      filesystem:
+        chunks_directory: /var/loki/chunks
+        rules_directory: /var/loki/rules
+  
+  schemaConfig:
+    configs:
+      - from: 2025-01-01
+        store: tsdb
+        object_store: filesystem
+        schema: v13
+        index:
+          prefix: index_
+          period: 24h
+
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+
+singleBinary:
+  replicas: 1
+  persistence:
+    enabled: true
+    size: 10Gi
+    storageClass: "standard"
+
+read:
+  replicas: 0
+write:
+  replicas: 0
+backend:
+  replicas: 0
+
+monitoring:
+  selfMonitoring:
+    enabled: false
+    lokiCanary:
+      enabled: false
+test:
+  enabled: false
+gateway:
+  enabled: false
