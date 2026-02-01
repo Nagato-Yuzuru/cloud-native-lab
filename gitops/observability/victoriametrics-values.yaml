@@ -1,0 +1,21 @@
+server:
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  persistentVolume:
+    enabled: true
+    size: 10Gi
+    storageClass: "standard"
+  scrape:
+    enabled: true
+    config:
+      global:
+        scrape_interval: 15s
+      scrape_configs:
+        - job_name: 'victoriametrics'
+          static_configs:
+            - targets: [ 'localhost:8428' ]
