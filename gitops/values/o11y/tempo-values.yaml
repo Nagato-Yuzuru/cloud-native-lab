@@ -1,10 +1,8 @@
 # 确保使用单体模式
 fullnameOverride: tempo
-
 tempo:
   repository: grafana/tempo
   tag: 2.9.0
-  
   receivers:
     jaeger:
       protocols:
@@ -18,7 +16,6 @@ tempo:
           endpoint: 0.0.0.0:4317
         http:
           endpoint: 0.0.0.0:4318
-
   # instead to s3
   storage:
     trace:
@@ -27,12 +24,10 @@ tempo:
         path: /var/tempo/traces
       wal:
         path: /var/tempo/wal
-
 persistence:
   enabled: true
   size: 10Gi
   storageClass: "standard"
-
 resources:
   limits:
     cpu: 500m

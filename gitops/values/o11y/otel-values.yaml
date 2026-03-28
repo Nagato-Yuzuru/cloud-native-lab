@@ -1,9 +1,7 @@
 mode: daemonset
-
 image:
   repository: "otel/opentelemetry-collector-contrib"
   pullPolicy: IfNotPresent
-
 presets:
   hostMetrics:
     enabled: true
@@ -11,7 +9,6 @@ presets:
     enabled: true
   kubernetesAttributes:
     enabled: true
-
 config:
   receivers:
     otlp:
@@ -20,7 +17,6 @@ config:
           endpoint: 0.0.0.0:4317
         http:
           endpoint: 0.0.0.0:4318
-    
     prometheus:
       config:
         scrape_configs:
@@ -28,7 +24,6 @@ config:
             scrape_interval: 10s
             static_configs:
               - targets: ['0.0.0.0:8888']
-
   processors:
     batch:
       send_batch_size: 1000
@@ -37,38 +32,30 @@ config:
       check_interval: 1s
       limit_percentage: 70
       spike_limit_percentage: 30
-
   exporters:
     otlp/tempo:
       endpoint: "tempo.observability:4317"
       tls:
         insecure: true
-
     prometheusremotewrite/vm:
       endpoint: "http://victoriametrics-victoria-metrics-single-server.observability:8428/api/v1/write"
-
     debug:
       verbosity: basic
-
   service:
     pipelines:
       traces:
         receivers: [otlp]
         processors: [memory_limiter, k8sattributes, batch]
         exporters: [otlp/tempo, debug]
-      
       metrics:
         receivers: [otlp, prometheus, hostmetrics]
         processors: [memory_limiter, k8sattributes, batch]
         exporters: [prometheusremotewrite/vm]
-      
       logs:
         receivers: [otlp]
         processors: [memory_limiter, k8sattributes, batch]
         exporters: [debug]
-
 hostNetwork: false
-
 ports:
   otlp:
     enabled: true

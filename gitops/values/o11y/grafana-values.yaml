@@ -23,23 +23,19 @@ dashboardProviders:
         editable: true
         options:
           path: /var/lib/grafana/dashboards/default
-
 dashboards:
   default:
     kubernetes-cluster:
       gnetId: 315
       revision: 3
       datasource: VictoriaMetrics
-
     node-exporter:
       gnetId: 1860
       revision: 29
       datasource: VictoriaMetrics
-
 securityContext:
   runAsUser: 472
   runAsGroup: 472
   fsGroup: 472
-
 initChownData:
   enabled: false

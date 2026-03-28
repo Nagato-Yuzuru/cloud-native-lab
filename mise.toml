@@ -3,7 +3,9 @@ helm = "latest"
 k9s = "latest"
 kind = "latest"
 kubectl = "latest"
+lefthook = "latest"
 opentofu = "latest"
+yamlfmt = "latest"
 
 [env]
 KUBECONFIG = "{{config_root}}/bootstrap/kubeconfig"

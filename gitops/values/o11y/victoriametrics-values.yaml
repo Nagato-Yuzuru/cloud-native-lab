@@ -18,4 +18,4 @@ server:
       scrape_configs:
         - job_name: 'victoriametrics'
           static_configs:
-            - targets: [ 'localhost:8428' ]
+            - targets: ['localhost:8428']

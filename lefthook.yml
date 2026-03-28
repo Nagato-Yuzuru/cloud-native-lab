@@ -1,0 +1,11 @@
+pre-commit:
+  commands:
+    fmt-terraform:
+      glob: "**/*.tf"
+      run: tofu fmt {staged_files}
+      stage_fixed: true
+
+    fmt-yaml:
+      glob: "**/*.{yaml,yml}"
+      run: yamlfmt {staged_files}
+      stage_fixed: true
