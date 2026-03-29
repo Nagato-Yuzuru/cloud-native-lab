@@ -7,7 +7,7 @@ terraform {
 
 provider "helm" {
   kubernetes = {
-    config_path = "${path.module}/../../kubeconfig"
+    config_path = "${path.module}/../kubeconfig"
   }
 }
 
@@ -38,33 +38,6 @@ resource "helm_release" "cilium" {
   ]
 }
 
-resource "helm_release" "ingress_nginx" {
-  name             = "ingress-nginx"
-  repository       = "https://kubernetes.github.io/ingress-nginx"
-  chart            = "ingress-nginx"
-  version          = "4.14.2"
-  namespace        = "ingress-nginx"
-  create_namespace = true
-
-  set = [
-    {
-      name  = "controller.hostNetwork"
-      value = "true"
-    },
-    {
-      name  = "controller.service.type"
-      value = "NodePort"
-    },
-    {
-      name  = "controller.publishService.enabled"
-      value = "false"
-    }
-  ]
-
-
-  depends_on = [helm_release.cilium]
-}
-
 resource "helm_release" "argocd" {
   name             = "argocd"
   repository       = "https://argoproj.github.io/argo-helm"
@@ -76,7 +49,7 @@ resource "helm_release" "argocd" {
   set = [{
     name  = "applicationSet.enabled"
     value = "true"
-  },
+    },
     {
       name  = "redis-ha.enabled"
       value = "false"
@@ -92,7 +65,7 @@ resource "helm_release" "argocd" {
     {
       name  = "repoServer.replicas"
       value = "1"
-    }]
+  }]
 
   depends_on = [helm_release.cilium]
 }

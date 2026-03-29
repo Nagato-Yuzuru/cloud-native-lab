@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kong
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  sources:
+    - repoURL: https://charts.konghq.com
+      chart: ingress
+      targetRevision: 0.23.0
+      helm:
+        valueFiles:
+          - $values/gitops/values/platform/kong-values.yaml
+    - repoURL: https://github.com/Nagato-Yuzuru/cloud-native-lab.git
+      targetRevision: main
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kong
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

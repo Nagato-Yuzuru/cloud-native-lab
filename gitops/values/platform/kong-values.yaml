@@ -1,0 +1,19 @@
+# Kong Ingress Controller on kind
+# Uses hostPort to bind proxy directly to node ports 80/443,
+# which are mapped to the host via kind extra_port_mappings.
+gateway:
+  replicaCount: 1
+  proxy:
+    http:
+      hostPort: 80
+    tls:
+      hostPort: 443
+  nodeSelector:
+    ingress-ready: "true"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi

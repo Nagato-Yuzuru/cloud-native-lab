@@ -31,16 +31,25 @@ kube := "kubectl --kubeconfig=bootstrap/kubeconfig"
     just down
     just up
 
-# Fix Terraform state drift (cluster gone but state still present), then re-run up
+# Fix Terraform state drift, then re-run up
 @fix:
     #!/usr/bin/env bash
     set -euo pipefail
+    kube="kubectl --kubeconfig=bootstrap/kubeconfig"
+
     if ! kind get clusters 2>/dev/null | grep -q '^native-lab$'; then
         echo "Cluster 'native-lab' not found — removing stale Terraform state..."
         tofu -chdir=bootstrap/cluster state rm kind_cluster.default 2>/dev/null || true
         tofu -chdir=bootstrap/apps state rm helm_release.argocd 2>/dev/null || true
         tofu -chdir=bootstrap/apps state rm helm_release.cilium 2>/dev/null || true
-        tofu -chdir=bootstrap/apps state rm helm_release.ingress_nginx 2>/dev/null || true
+    else
+        # Cluster exists but apps state may have been cleared — uninstall stale Helm releases
+        # so Terraform can re-create them cleanly (avoids "name already in use" errors).
+        if ! tofu -chdir=bootstrap/apps state list 2>/dev/null | grep -q 'helm_release'; then
+            echo "Apps state is empty but cluster exists — cleaning up stale Helm releases..."
+            helm uninstall cilium -n kube-system --kubeconfig bootstrap/kubeconfig 2>/dev/null || true
+            helm uninstall argocd -n argocd --kubeconfig bootstrap/kubeconfig 2>/dev/null || true
+        fi
     fi
     just up
 
