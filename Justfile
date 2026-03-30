@@ -43,13 +43,19 @@ kube := "kubectl --kubeconfig=bootstrap/kubeconfig"
         tofu -chdir=bootstrap/apps state rm helm_release.argocd 2>/dev/null || true
         tofu -chdir=bootstrap/apps state rm helm_release.cilium 2>/dev/null || true
     else
-        # Cluster exists but apps state may have been cleared — uninstall stale Helm releases
-        # so Terraform can re-create them cleanly (avoids "name already in use" errors).
-        if ! tofu -chdir=bootstrap/apps state list 2>/dev/null | grep -q 'helm_release'; then
-            echo "Apps state is empty but cluster exists — cleaning up stale Helm releases..."
-            helm uninstall cilium -n kube-system --kubeconfig bootstrap/kubeconfig 2>/dev/null || true
-            helm uninstall argocd -n argocd --kubeconfig bootstrap/kubeconfig 2>/dev/null || true
-        fi
+        # Cluster exists — for each Terraform-managed release, if it's in the cluster
+        # but NOT in state, uninstall it so Terraform can re-create cleanly.
+        state=$(tofu -chdir=bootstrap/apps state list 2>/dev/null || true)
+        for release in cilium:kube-system argocd:argocd; do
+            name="${release%%:*}"
+            ns="${release##*:}"
+            if ! echo "$state" | grep -q "helm_release.${name}"; then
+                if helm status "$name" -n "$ns" --kubeconfig bootstrap/kubeconfig &>/dev/null; then
+                    echo "Uninstalling stale release '$name' (in cluster but not in Terraform state)..."
+                    helm uninstall "$name" -n "$ns" --kubeconfig bootstrap/kubeconfig 2>/dev/null || true
+                fi
+            fi
+        done
     fi
     just up
 

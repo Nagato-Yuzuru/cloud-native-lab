@@ -1,0 +1,17 @@
+# Shared PostgreSQL — single instance, no HA
+architecture: standalone
+auth:
+  postgresPassword: postgres
+  database: default
+primary:
+  persistence:
+    enabled: true
+    size: 5Gi
+    storageClass: standard
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi

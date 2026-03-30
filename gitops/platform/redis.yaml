@@ -1,25 +1,25 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: victoriametrics
+  name: redis
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io/foreground
 spec:
   project: default
   sources:
-    - repoURL: https://victoriametrics.github.io/helm-charts/
-      chart: victoria-metrics-single
-      targetRevision: 0.29.0
+    - repoURL: https://charts.bitnami.com/bitnami
+      chart: redis
+      targetRevision: 25.3.9
       helm:
         valueFiles:
-          - $values/gitops/values/o11y/victoriametrics-values.yaml
+          - $values/gitops/values/platform/redis-values.yaml
     - repoURL: https://github.com/Nagato-Yuzuru/cloud-native-lab.git
       targetRevision: main
       ref: values
   destination:
     server: https://kubernetes.default.svc
-    namespace: observability
+    namespace: platform
   syncPolicy:
     automated:
       prune: true
