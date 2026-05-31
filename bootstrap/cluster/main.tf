@@ -35,6 +35,12 @@ resource "kind_cluster" "default" {
         protocol       = "TCP"
       }
     }
+    node {
+      role = "worker"
+    }
+    node {
+      role = "worker"
+    }
     networking {
       disable_default_cni = true
       kube_proxy_mode     = "iptables"
