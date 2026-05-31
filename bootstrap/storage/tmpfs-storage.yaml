@@ -1,0 +1,75 @@
+# Declarative RAM-backed storage for the lab.
+#
+# Kubernetes has no native "mount a tmpfs on the node" resource, so node-level
+# mutations are expressed the idiomatic way: a privileged DaemonSet that enters
+# the node's mount namespace and mounts a tmpfs. This makes kind's default
+# local-path-provisioner directory (/var/local-path-provisioner) RAM-backed, so
+# every PVC using the `standard` storageClass lives in RAM — zero SSD writes —
+# without changing any chart's persistence settings.
+#
+# tmpfs is charged to the node (Docker-VM) memory, NOT to individual pod limits,
+# so it never triggers per-pod OOMKills. Sized at 3g; bounded further by the
+# short retention configured in the o11y values.
+#
+# Must be applied AFTER the CNI is up (pods need networking to schedule) and
+# BEFORE any PVC-creating workload — see the `_tmpfs-storage` recipe in Justfile.
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: tmpfs-local-path
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: tmpfs-local-path
+    app.kubernetes.io/part-of: cloud-native-lab
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: tmpfs-local-path
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: tmpfs-local-path
+    spec:
+      hostPID: true
+      # hostNetwork so the pod schedules WITHOUT waiting for the CNI (Cilium) to be
+      # ready — this DS only nsenter-mounts a tmpfs and needs no pod networking.
+      # Without it the pod blocks on NetworkNotReady until Cilium comes up, which can
+      # exceed the rollout timeout during `just up`.
+      hostNetwork: true
+      # Run on every node, including any control-plane taints.
+      tolerations:
+        - operator: Exists
+      priorityClassName: system-node-critical
+      containers:
+        - name: mount-tmpfs
+          image: busybox:1.37
+          securityContext:
+            privileged: true
+          # nsenter -t 1 -m enters PID 1's (the node's) mount namespace, so the
+          # tmpfs mount is visible to the node and to local-path's hostPath PVs.
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              set -eu
+              nsenter -t 1 -m -- sh -c '
+                mkdir -p /var/local-path-provisioner
+                if mountpoint -q /var/local-path-provisioner; then
+                  echo "tmpfs already mounted at /var/local-path-provisioner"
+                else
+                  mount -t tmpfs -o size=3g,mode=1777 tmpfs /var/local-path-provisioner
+                  echo "tmpfs mounted at /var/local-path-provisioner (size=3g)"
+                fi
+              '
+              exec sleep infinity
+          # Ready/alive only while the tmpfs is actually present; if it ever
+          # disappears the probe fails, the pod restarts, and the mount is redone.
+          readinessProbe:
+            exec:
+              command: ["nsenter", "-t", "1", "-m", "--", "mountpoint", "-q", "/var/local-path-provisioner"]
+            initialDelaySeconds: 2
+            periodSeconds: 20
+          livenessProbe:
+            exec:
+              command: ["nsenter", "-t", "1", "-m", "--", "mountpoint", "-q", "/var/local-path-provisioner"]
+            initialDelaySeconds: 5
+            periodSeconds: 30

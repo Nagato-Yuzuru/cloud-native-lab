@@ -25,8 +25,9 @@ tempo:
       wal:
         path: /var/tempo/wal
 persistence:
+  # RAM-backed via the tmpfs local-path storageClass (see bootstrap/storage/tmpfs-storage.yaml).
   enabled: true
-  size: 10Gi
+  size: 2Gi
   storageClass: "standard"
 resources:
   limits:

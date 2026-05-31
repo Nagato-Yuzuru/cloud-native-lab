@@ -1,4 +1,7 @@
 server:
+  # Keep only 1 day of samples: data lives in RAM (PVC -> tmpfs, see
+  # bootstrap/storage/tmpfs-storage.yaml), so short retention keeps the footprint tiny.
+  retentionPeriod: 1d
   resources:
     limits:
       cpu: 500m
@@ -7,14 +10,15 @@ server:
       cpu: 100m
       memory: 128Mi
   persistentVolume:
+    # PVC is RAM-backed via the tmpfs-mounted local-path storageClass — never hits the SSD.
     enabled: true
-    size: 10Gi
+    size: 2Gi
     storageClass: "standard"
   scrape:
     enabled: true
     config:
       global:
-        scrape_interval: 15s
+        scrape_interval: 30s
       scrape_configs:
         - job_name: 'victoriametrics'
           static_configs:

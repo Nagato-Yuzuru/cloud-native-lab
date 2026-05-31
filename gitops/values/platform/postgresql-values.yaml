@@ -5,8 +5,9 @@ auth:
   database: default
 primary:
   persistence:
+    # RAM-backed via the tmpfs local-path storageClass (see bootstrap/storage/tmpfs-storage.yaml).
     enabled: true
-    size: 5Gi
+    size: 1Gi
     storageClass: standard
   resources:
     requests:

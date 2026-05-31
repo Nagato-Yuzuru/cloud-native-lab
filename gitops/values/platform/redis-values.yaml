@@ -4,8 +4,9 @@ auth:
   enabled: false
 master:
   persistence:
+    # RAM-backed via the tmpfs local-path storageClass (see bootstrap/storage/tmpfs-storage.yaml).
     enabled: true
-    size: 2Gi
+    size: 512Mi
     storageClass: standard
   resources:
     requests:
