@@ -1,6 +1,10 @@
 # Kong Ingress Controller on kind
 # Uses hostPort to bind proxy directly to node ports 80/443,
 # which are mapped to the host via kind extra_port_mappings.
+controller:
+  ingressController:
+    env:
+      feature_gates: "GatewayAlpha=true"
 gateway:
   replicaCount: 1
   proxy:

@@ -20,6 +20,24 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: kong
+  ignoreDifferences:
+    - group: admissionregistration.k8s.io
+      kind: ValidatingWebhookConfiguration
+      name: kong-controller-kong-validations
+      jsonPointers:
+        - /webhooks/0/clientConfig/caBundle
+    - group: ""
+      kind: Secret
+      name: kong-controller-validation-webhook-ca-keypair
+      namespace: kong
+      jsonPointers:
+        - /data
+    - group: ""
+      kind: Secret
+      name: kong-controller-validation-webhook-keypair
+      namespace: kong
+      jsonPointers:
+        - /data
   syncPolicy:
     automated:
       prune: true
